@@ -10,3 +10,10 @@
 *.lai
 *.la
 *.a
+
+# Intellisense files
+*.sdf
+
+# Debug builds
+Debug/*
+Debug
