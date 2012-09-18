@@ -13,7 +13,9 @@
 
 # Intellisense files
 *.sdf
+*.opensdf
 
 # Debug builds
 Debug/*
-Debug
+*/Debug/*
+*/Debug

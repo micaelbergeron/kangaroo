@@ -41,10 +41,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>C:\Static Libraries\ClanLib\lib\Win32;$(LibraryPath);$(SolutionDir)lib</LibraryPath>
-    <IncludePath>C:\Static Libraries\ClanLib\include;$(IncludePath);$(SolutionDir)include</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Static Libraries\ClanLib\lib\Win32;$(LibraryPath);$(SolutionDir)lib</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
