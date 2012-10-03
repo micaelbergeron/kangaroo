@@ -14,6 +14,11 @@ namespace quaternion {
 		float j;
 		float k;
 
+		Quaternion() {
+			a = 1;
+			i = j = k = 0;
+		}
+
 		Quaternion(float a, float i, float j, float k) {
 			this->a = a;
 			this->i = i;
@@ -21,6 +26,22 @@ namespace quaternion {
 			this->k = k;		
 
 		};
+
+		Quaternion(float rot_x, float rot_y, float rot_z)
+		{
+			float cos_z_2 = cosf(0.5*rot_z);
+			float cos_y_2 = cosf(0.5*rot_y);
+			float cos_x_2 = cosf(0.5*rot_x);
+
+			float sin_z_2 = sinf(0.5*rot_z);
+			float sin_y_2 = sinf(0.5*rot_y);
+			float sin_x_2 = sinf(0.5*rot_x);
+
+			a   = cos_z_2*cos_y_2*cos_x_2 + sin_z_2*sin_y_2*sin_x_2;
+			i = cos_z_2*cos_y_2*sin_x_2 - sin_z_2*sin_y_2*cos_x_2;
+			j = cos_z_2*sin_y_2*cos_x_2 + sin_z_2*cos_y_2*sin_x_2;
+			k = sin_z_2*cos_y_2*cos_x_2 - cos_z_2*sin_y_2*sin_x_2;
+		}
 	
 		Quaternion(float angle, const float* axis) {
 			float theta = angle * PI / 360;
@@ -62,20 +83,20 @@ namespace quaternion {
 		Quaternion Normalize();
 		float* toRotationMatrix() {
 			float* R = new float[16]();
-			// first line
-			R[0] = 1-2*j*j-2*k*k;
-			R[4] = 2*i*j-2*a*k;
-			R[8] = 2*i*k+2*a*j;
+			
+			R[0] = 1.0f - 2*j*j - 2*k*k;
+			R[4] = 2*i*j + 2*a*k;
+			R[8] = 2*i*k - 2*a*j;
 			R[12] = 0;
 
-			R[1] = 2*i*j+2*a*k; 
-			R[5] = 1-2*i*i-2*k*k;
-			R[9] = 2*j*k+2*a*i; 
+			R[1] = 2*i*j - 2*a*k; 
+			R[5] = 1.0f - 2*i*i - 2*k*k;
+			R[9] = 2*j*k + 2*a*i; 
 			R[13] = 0;
 			
-			R[2] = 2*i*k-2*a*j;
-			R[6] = 2*j*k-2*a*i;
-			R[10] = 1-2*i*i-2*j*j;
+			R[2] = 2*i*k - 2*a*j;
+			R[6] = 2*j*k - 2*a*i;
+			R[10] = 1.0f - 2*i*i - 2*j*j;
 			R[14] = 0;
 
 			R[3] = 0;
@@ -105,6 +126,7 @@ namespace quaternion {
 	}
 
 	Quaternion Quaternion::operator *(const Quaternion & other) {
+		
 
 		Quaternion retval(
 			a * other.a - i * other.i - j * other.j - k * other.k,
