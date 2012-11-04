@@ -5,11 +5,14 @@
 
 #include <cstdlib>
 #include "glut.h"
-#include "Quaternion.h"
+#include "Pipe.h"
+#include <vector>
 
 using namespace quaternion;
+using namespace std;
 
 typedef Quaternion GLQuaternion;
+typedef vector<Pipe *> PipeList;
 
 GLUquadricObj * quadric;
 
@@ -24,20 +27,51 @@ float AXIS_Z[] = {0, 0, 1};
 
 Quaternion worldRot; // identity
 const float MOUSE_ROT_FACTOR = 0.01f;
+const float PIPE_LENGTH = 3.0f;
+
+float ITERATION_DELAY = 500; // ms
+PipeList PIPE_LIST;
 
 void rotate(quaternion::Quaternion rot) {
 	float* rotMatrix = rot.toRotationMatrix();
 	glMultMatrixf(rotMatrix);
 }
 
+void renderPipeList()
+{	
+	float inv_iterations = 1.0f / (float)PIPE_LIST.size();	
+	float pipeMat[] = { 0.1, 0.5, inv_iterations, 1.0 };
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, pipeMat);
+
+	PipeList::const_iterator pipe_it;
+	for (pipe_it = PIPE_LIST.begin(); pipe_it != PIPE_LIST.end(); pipe_it++)
+	{
+		Pipe * p = *pipe_it;
+		rotate(p->getOrientation().Normalize());
+		gluCylinder(quadric, 0.5, 0.5, p->getLength(), 20, 20);
+		glTranslatef(0, 0, -(p->getLength()) );
+	}
+}
+
+void addPipeToList(int pipe_length)
+{
+	// calculate a random vector from 3 complete quarter rotation
+	float qx = floorf(rand() % 3) * 90.0f;
+	float qy = floorf(rand() % 3) * 90.0f;
+	float qz = floorf(rand() % 3) * 90.0f;
+
+	Quaternion rot = Quaternion(qx, qy, qz);
+	PIPE_LIST.push_back(new Pipe(rot, pipe_length));
+
+	cout << qx << " " << qy << " " << qz << endl;
+
+	// register again
+	glutTimerFunc(ITERATION_DELAY, addPipeToList, PIPE_LENGTH);
+}
+
 void renderMolecule(Quaternion rot, int iterations, int rot_x, int rot_y, int rot_z) 
 {	
-	float inv_iterations = 1.0f / (float)iterations;	
-	float sphereMat[] = { 0.1, 0.5, inv_iterations, 1.0 };	
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, sphereMat);
-
 	if (iterations == 0) {		
-		gluSphere(quadric, 0.5, 20, 20);
 		return;
 	}
 	
@@ -47,8 +81,8 @@ void renderMolecule(Quaternion rot, int iterations, int rot_x, int rot_y, int ro
 
 	// glColor3f(inv_iterations, 1 - inv_iterations, inv_iterations);
 	gluSphere(quadric, 0.60, 20, 20);
-	glPushMatrix();
-
+	glPushMatrix();	
+	
 	glRotatef(rot_x, 1, 0, 0);
 	glRotatef(rot_y, 0, 1, 0);
 	glRotatef(rot_z, 0, 0, 1);
@@ -118,17 +152,13 @@ void display() {
 	
 	renderLightning();
 
+	//
+	
 	gluLookAt(0, 0, 0, 0, 0, -5, 0, 2, 0);
-
 		
 	rotate(Quaternion(-90, AXIS_X));
 	glPushMatrix();
-	renderMolecule(Quaternion(1, 0, 0, 0), 2, 95, 95, 95);
-	glPopMatrix();
-	
-	glPushMatrix();
-	rotate(Quaternion(45, AXIS_X));
-	renderMolecule(Quaternion(1, 0, 0, 0), 5, 90, 45, 85);
+	renderPipeList();
 	glPopMatrix();
 
 	glFlush();
@@ -210,6 +240,7 @@ int main(int argc, char** argv) {
 	glutIdleFunc(idle);
 	glutMouseFunc(mouseClick);
 	glutMotionFunc(mouseMove);
+	glutTimerFunc(ITERATION_DELAY, addPipeToList, PIPE_LENGTH);
 
 	glutMainLoop();
 	return 0;

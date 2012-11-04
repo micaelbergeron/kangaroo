@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <IncludePath>C:\Static Libraries\ClanLib\include;$(IncludePath);$(ProjectDir)include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib;$(ProjectDir)</ReferencePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LibraryPath>C:\Static Libraries\ClanLib\lib\Win32;$(LibraryPath);$(ProjectDir)lib</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup />
+</Project>
