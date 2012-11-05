@@ -11,11 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\willperone\Math\Assert.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="include\willperone\Math\Assert.h" />
+    <ClInclude Include="include\willperone\Math\Matrix2.h" />
+    <ClInclude Include="include\willperone\Math\Matrix3.h" />
+    <ClInclude Include="include\willperone\Math\matrix4.h" />
+    <ClInclude Include="include\willperone\Math\MatrixN.h" />
+    <ClInclude Include="include\willperone\Math\quaternion.h" />
+    <ClInclude Include="include\willperone\Math\Utility.h" />
+    <ClInclude Include="include\willperone\Math\vector2.h" />
+    <ClInclude Include="include\willperone\Math\vector3.h" />
+    <ClInclude Include="include\willperone\Math\vector4.h" />
     <ClInclude Include="Polyhedron.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="SceneObject.h" />

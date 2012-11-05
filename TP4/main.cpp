@@ -8,10 +8,7 @@
 #include "Cylinder.h"
 #include "Cube.h"
 
-using namespace quaternion;
 using namespace std;
-
-typedef Quaternion GLQuaternion;
 
 GLUquadricObj * quadric;
 
@@ -24,24 +21,23 @@ float AXIS_X[] = {1, 0, 0};
 float AXIS_Y[] = {0, 1, 0}; 
 float AXIS_Z[] = {0, 0, 1};
 
-float worldPos[] = {-4.0f, 2.0f, -20.0f};
-Quaternion worldRot; // identity
+Transform main_camera;
+Transform worldOrientation;
+
+// Matrices for views
+float MAT_PROJ_ORTHO[16];
+float MAT_PROJ_PERSPECTIVE[16];
+
 Polyhedron* cube;
 Polyhedron* bigcube;
 
 SceneObject * vessel;
 
-const float MOUSE_ROT_FACTOR = 0.02;
+const float MOUSE_ROT_FACTOR = 0.1f;
 const float PIPE_LENGTH = 2.0f;
 
 float ITERATION_DELAY = 250.0; // ms
 int PIPE_BY_ADD = 1;
-
-void rotate(Quaternion rot) {
-	rot.Normalize();
-	float* rotMatrix = rot.toRotationMatrix();
-	glMultMatrixf(rotMatrix);
-}
 
 void renderLightning() 
 {
@@ -51,22 +47,20 @@ void renderLightning()
 	glEnable(GL_LIGHT0);
 }
 
-float worldOrtho[16];
 void applyWorldTransform ()
 {		
-	glDisable(GL_LIGHTING);	
-
+	glDisable(GL_LIGHTING);
+	
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix ();
-	glLoadMatrixf(worldOrtho);
+	glLoadMatrixf(MAT_PROJ_ORTHO);
 	// We are now orthogonal;
 
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef (-8,-8, 0);
-
+	glLoadIdentity();
+		
 	glScalef(1.5f, 1.5f, 1.5f);
-	rotate(worldRot);
+	glTranslatef(-8, -8, 0);
+
 	glLineWidth (2.0);
 
 	// draw the indicator
@@ -83,13 +77,11 @@ void applyWorldTransform ()
 	glEnd();
 
 	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
+	glLoadMatrixf(MAT_PROJ_PERSPECTIVE);
 
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix ();	
-
-	glTranslatef(worldPos[0], worldPos[1], worldPos[2]);
-	rotate(worldRot);	
+	glLoadIdentity();
+	worldOrientation.apply();
 	
 	glEnable(GL_LIGHTING);
 }
@@ -101,8 +93,8 @@ void display() {
 	renderLightning();	
 	applyWorldTransform();	
 
-	//gluLookAt(0, 0, 0, 0, 0, -5, 0, 2, 0);		
-	//rotate(Quaternion(-90, AXIS_X));
+	//glTranslatef(0, 0, -10);
+	
 	glPushMatrix();
 
 	vessel->draw(true);
@@ -114,16 +106,38 @@ void display() {
 	glutPostRedisplay();
 }
 
+/*
+
+void display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	
+	Cube * c = new Cube();
+	c->transform.translate(0,0,0);
+	c->draw(true);
+	delete c;
+	
+	
+
+	gluSphere(quadric, 10.0f, 10, 10);
+
+	glFlush();
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
+*/
 void idle() {
-	const float SMOOTHING = 0.05f;
-	// worldRot = worldRot * Quaternion(SMOOTHING, 0, SMOOTHING);
+	const float SMOOTHING = 0.01f;
+	vessel->transform.rotate(Quaternion(0, SMOOTHING, 0));
 }
 
 void init_glutDisplay() {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
 	glutInitWindowSize(500, 500);
-	glutCreateWindow("Molecule");
+	glutCreateWindow("Starship Micael X III");
 	glutDisplayFunc(display);
 }
 
@@ -138,11 +152,12 @@ void init_opengl() {
 
 	// calculate the worldOrtho
 	glOrtho(-10.0, 10.0, -10, 10, -5, 5); 
-	glGetFloatv(GL_PROJECTION_MATRIX, worldOrtho);
+	glGetFloatv(GL_PROJECTION_MATRIX, MAT_PROJ_ORTHO);
 	
 	glLoadIdentity();
 	gluPerspective(90, 1.0, 0.1, 500);
 
+	glGetFloatv(GL_PROJECTION_MATRIX, MAT_PROJ_PERSPECTIVE);
 	glMatrixMode(GL_MODELVIEW);
 	
 	quadric = gluNewQuadric();
@@ -157,7 +172,7 @@ void mouseMove(int x, int y) {
 	float delta_y = y - mouse_y;
 
 	// compute a vector from current deltas
-	worldRot = worldRot * Quaternion(-delta_y * MOUSE_ROT_FACTOR, -delta_x * MOUSE_ROT_FACTOR, 0);
+	vessel->transform.rotate(Quaternion(delta_x * MOUSE_ROT_FACTOR, delta_y * MOUSE_ROT_FACTOR, 0));
 
 	mouse_x = x;
 	mouse_y = y;
@@ -165,36 +180,62 @@ void mouseMove(int x, int y) {
 
 SceneObject * buildVessel()
 {
-	Sphere * base = new Sphere(quadric, 1.0f, 20);
+	Sphere * base = new Sphere(quadric, 1.25f, 20);
 
+	Sphere * cockpit = new Sphere(quadric, 0.75f, 10);
+	cockpit->transform.translate(-0.75f, -0.25f, 0);
+	cockpit->attach(base, true);
+	
 	// wing attachement
 	Cylinder * l_wing = new Cylinder(quadric, 0.75f, 0.2f, 3, 15);
 
+	Cylinder * l_gattling = new Cylinder(quadric, 0.4f, 0.25f, 2, 10);	
+	l_gattling->transform.translate(0.7f, 0, 1.8f);
+	l_gattling->transform.rotate(Quaternion(90,0,0));
+	l_gattling->attach(l_wing, true);
+
 	// solar panel
 	Cube * l_wing_panel = new Cube(1.0f, 2.0f, 0.1f);
-	Cube * l_wing_panel_top = new Cube(*l_wing_panel);
-	Cube * l_wing_panel_bot = new Cube(*l_wing_panel);
+	l_wing_panel->transform.translate(0, 0, 3);
 
-	l_wing_panel_top->attach(l_wing_panel, true);
-	l_wing_panel_bot->attach(l_wing_panel, true);
+	Cube * l_wing_center = new Cube(0.40f, 0.75f, 2.0f);
+	l_wing_center->transform.translate(0, 0, 1.1f);
+	l_wing_center->attach(l_wing_panel, true);
 
-	l_wing_panel_bot->transform.setScale(1, 1, 1);
-	l_wing_panel_bot->transform.setRotation(Quaternion(30, 0, 0));
-	l_wing_panel_bot->transform.setPosition(0, 2.3, 0);
-	
-	l_wing_panel_top->transform.setScale(1, 1, 1);
-	l_wing_panel_top->transform.setPosition(0, -2.3, 0);
+	Cube * l_wing_panel_bot = new Cube();
+
+	float rot_flap = 40;
+	float rot_flap_rad = rot_flap * PI / 180;
+	float x_smooth = 0.4;
+	float y_smooth = 0.8;
+
+	l_wing_panel_bot->transform.rotate(Quaternion(0, 0, rot_flap));
+	l_wing_panel_bot->transform.translate(0, 1 + sinf(rot_flap_rad), 3 - cosf(rot_flap_rad));
+	l_wing_panel_bot->transform.scale(2.0f, 1.0f, 0.1f);
+
+	Cube * l_wing_panel_top = new Cube();
+	l_wing_panel_top->transform.rotate(Quaternion(0, 0, -rot_flap));
+	l_wing_panel_top->transform.translate(0, -1 + sinf(-rot_flap_rad), 3 - cosf(-rot_flap_rad));
+	l_wing_panel_top->transform.scale(2.0f, 1.0f, 0.1f);
 
 	l_wing_panel->attach(l_wing, true);
-	l_wing_panel->transform.setPosition(0, 0, 3);
-	l_wing_panel->transform.setRotation(Quaternion(0, 0, 90));
+	l_wing_panel_top->attach(l_wing, true);
+	l_wing_panel_bot->attach(l_wing, true);
+
+	Cylinder * l_wing_2 = new Cylinder(*l_wing);
+	l_wing_2->transform.scale(2,2,2);
 
 	Cylinder * r_wing = new Cylinder(*l_wing);
+	r_wing->transform.scale(1,-1,-1);
 
-	r_wing->transform.setScale(-1, -1, -1);
+	Cylinder * r_wing_2 = new Cylinder(*r_wing);
+	r_wing_2->transform.scale(2,2,2);
+
 	
 	l_wing->attach(base, true);
 	r_wing->attach(base, true);	
+
+	base->transform.translate(0, 0, 0);
 
 	return base;
 }
@@ -202,8 +243,6 @@ SceneObject * buildVessel()
 Polyhedron* buildCube()
 {
 	Polyhedron* c = new Polyhedron();
-
-
 	return c;
 }
 
@@ -223,24 +262,11 @@ int main(int argc, char** argv) {
 	glutMouseFunc(mouseClick);
 	glutMotionFunc(mouseMove);
 
-	Transform::rotationFunc = &rotate;
-
-	cube = buildCube();
-	bigcube = buildCube();
-	cube->attach(bigcube, true);
-		
-	bigcube->transform.setRotation(Quaternion(0, 0, 45));
-	cube->transform.setPosition(0, 5, 0);
-	cube->transform.setScale(1, 1, 0.1);
-
-	Polyhedron *cube2 = new Polyhedron(*cube);
-	cube2->transform.setPosition(0, -3, 0);
-	cube2->transform.setScale(2, 0.1, 0.5);
-	cube2->attach(bigcube, true);
-
-	Sphere * s = new Sphere(quadric, 1.0f, 10);
-	s->transform.setPosition(0, 3, 0);
-	s->attach(bigcube, false);
+	main_camera.translate(0, 0, 0);
+	main_camera.rotate(Quaternion(1, 0, 0, 0));
+	
+	worldOrientation.translate(0, 0, -10);
+	worldOrientation.rotate(Quaternion(-90,0,0));
 
 	vessel = buildVessel();
 

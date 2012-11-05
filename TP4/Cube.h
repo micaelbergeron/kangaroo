@@ -4,6 +4,10 @@
 class Cube : public Polyhedron
 {
 private:
+	float m_width;
+	float m_height;
+	float m_depth;
+
 	void buildOrthoCube()
 	{
 		GLfloat vertices[] =  { 1, 1, 1,  -1, 1, 1,  -1,-1, 1,   1,-1, 1,   // v0,v1,v2,v3 (front)
@@ -43,13 +47,26 @@ public:
 	Cube(GLfloat height, GLfloat width, GLfloat depth)
 		: Polyhedron()
 	{
+		m_height = height;
+		m_width = width;
+		m_depth = depth;
+
 		buildOrthoCube();
-		transform.setScale(width, height, depth);
+		reset();
 	}
 
 	Cube(const Cube & other)
 		: Polyhedron(other)
 	{
+		m_height = other.m_height;
+		m_width = other.m_width;
+		m_depth = other.m_depth;
+	}
+
+	void reset()
+	{
+		transform.reset();
+		transform.scale(m_width, m_height, m_depth);
 	}
 };
 

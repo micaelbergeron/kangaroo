@@ -1,3 +1,8 @@
+/*
+ * After multiples attempt to get it right, I will use another quaternion implementation
+ * The one I will start with is : willperone's implementation available at https://github.com/MegaManSE/willperone
+*/
+
 #include <iostream>
 #include <math.h>
 
@@ -134,10 +139,6 @@ namespace quaternion {
 			float k2 = k * k;
 
 			float* R = new float[16]();
-			1-2*(v.y*v.y+v.z*v.z), 2*(v.x*v.y-s*v.z),   2*(v.x*v.z+s*v.y),   
-				2*(v.x*v.y+s*v.z),   1-2*(v.x*v.x+v.z*v.z), 2*(v.y*v.z-s*v.x),   
-				2*(v.x*v.z-s*v.y),   2*(v.y*v.z+s*v.x),   1-2*(v.x*v.x+v.y*v.y)
-						
 			R[0] = a2 + i2 - j2 - k2;
 			R[4] = 2*(i*j + a*k);
 			R[8] = 2*(i*k - a*j);

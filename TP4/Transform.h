@@ -1,77 +1,53 @@
 #pragma once
-#include "Quaternion.h"
-#include "glut.h"
+
+// #include "Quaternion.h" not used anymore
+#include <willperone\Math\quaternion.h>
+#include <glut.h>
 
 using namespace std;
-using namespace quaternion;
+
+typedef quaternion Quaternion;
 
 class Transform
 {
 private:
-	GLfloat		m_position[3];
-	GLfloat		m_scale[3];
-	Quaternion	m_rotation;
+	matrix4		m_matrix;
 
 public:	
-	typedef void (*FUNC_ROTATE)(quaternion::Quaternion q);
-	static FUNC_ROTATE rotationFunc;
-
-	Transform(void)
+	Transform(void) 
 	{
-		m_position[0] = m_position[1] = m_position[2] = 0;
-		m_scale[0] = m_scale[1] = m_scale[2] = 1;
+		m_matrix.identity();
 	}
 
 	Transform(const Transform & other)
 	{
-		memcpy(m_position, other.m_position, 3);
-		memcpy(m_scale, other.m_scale, 3);
-		m_rotation = other.m_rotation;
-	}
-
-	Transform(GLfloat* pos, Quaternion rotation, GLfloat* scale = NULL)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			m_position[i] = pos[i];
-			m_rotation = rotation;
-			if (scale != NULL)
-			{
-				m_scale[i] = scale[i];
-			}
-		}
+		m_matrix = other.m_matrix;
 	}
 
 	~Transform(void) {}
 
-	void setPosition(GLfloat x, GLfloat y, GLfloat z)
+	void reset()
 	{
-		m_position[0] = x;
-		m_position[1] = y;
-		m_position[2] = z;
+		m_matrix.identity();
 	}
 
-	void setRotation(quaternion::Quaternion q)
+	void translate(GLfloat x, GLfloat y, GLfloat z)
 	{
-		m_rotation = q;
+		matrix4::translation(m_matrix, vector3f(x,y,z));
 	}
 
-	void setScale(GLfloat x, GLfloat y, GLfloat z)
+	void rotate(Quaternion q)
 	{
-		m_scale[0] = x;
-		m_scale[1] = y;
-		m_scale[2] = z;
+		m_matrix = m_matrix * matrix4((matrix3)q, vector3f(0,0,0));
+	}
+
+	void scale(GLfloat x, GLfloat y, GLfloat z)
+	{
+		m_matrix *= matrix4(vector3f(x, 0, 0), vector3f(0, y, 0), vector3f(0, 0, z), vector3f(0,0,0));
 	}
 
 	void apply()
 	{
-		glTranslatef(m_position[0], m_position[1], m_position[2]);
-		if (rotationFunc != NULL)
-		{
-			rotationFunc(m_rotation);
-		}
-		glScalef(m_scale[0], m_scale[1], m_scale[2]);
+		glMultMatrixf(m_matrix.elem);
 	}
 };
-
-Transform::FUNC_ROTATE Transform::rotationFunc = NULL;

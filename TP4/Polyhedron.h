@@ -3,8 +3,6 @@
 #include "SceneObject.h"
 
 using namespace std;
-using namespace quaternion;
-
 class Polyhedron : public SceneObject
 {
 private :
