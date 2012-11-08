@@ -77,5 +77,8 @@
     <ClInclude Include="include\willperone\Math\Assert.h">
       <Filter>Header Files\willperone%255cmath</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

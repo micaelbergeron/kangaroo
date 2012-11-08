@@ -27,6 +27,7 @@
     <ClInclude Include="include\willperone\Math\vector2.h" />
     <ClInclude Include="include\willperone\Math\vector3.h" />
     <ClInclude Include="include\willperone\Math\vector4.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Polyhedron.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="SceneObject.h" />

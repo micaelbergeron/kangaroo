@@ -1,3 +1,3 @@
 [submodule "TP4/include/willperone"]
 	path = TP4/include/willperone
-	url = ../willperone.git
+	url = git://github.com/micaelbergeron/willperone.git

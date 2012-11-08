@@ -9,8 +9,10 @@ private:
 	GLfloat m_height;
 	GLint	m_resolution;
 	GLUquadricObj * m_quadric; // does not own
-
+	
 public:
+	bool has_caps;
+
 	Cylinder(void)
 		: SceneObject()
 	{
@@ -33,6 +35,14 @@ public:
 	void render()
 	{
 		gluCylinder(m_quadric, m_baseRadius, m_topRadius, m_height, m_resolution, m_resolution);
+		if (has_caps)
+		{
+			glPushMatrix();			
+			gluDisk(m_quadric, 0, m_baseRadius, m_resolution, m_resolution);
+			glTranslatef(0, 0, m_height);
+			gluDisk(m_quadric, 0, m_topRadius, m_resolution, m_resolution);
+			glPopMatrix();
+		}
 	}
 };
 

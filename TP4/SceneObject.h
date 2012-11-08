@@ -1,5 +1,6 @@
 #pragma once
 #include "Transform.h"
+#include "Material.h"
 #include <assert.h>
 #include <list>
 #include <vector>
@@ -9,6 +10,8 @@ class SceneObject
 private:
 	bool m_hidden;
 	bool m_ownChilds;
+
+	Material * m_material;
 
 	list<SceneObject*>	m_childs;
 	list<bool>			m_ownedChilds;	
@@ -21,6 +24,7 @@ public:
 
 	SceneObject(void)
 	{	
+		m_material = NULL;
 		m_hidden = false;
 		m_ownChilds = false;
 	}
@@ -30,6 +34,7 @@ public:
 		m_hidden = other.m_hidden;
 		m_ownChilds = other.m_ownChilds;
 		m_childs = other.m_childs;
+		m_material = other.m_material;
 	}
 
 	~SceneObject(void)
@@ -43,6 +48,7 @@ public:
 				if (*c_it != NULL)
 				{
 					delete *c_it;
+					*c_it = NULL;
 				}
 			}
 		}
@@ -56,6 +62,10 @@ public:
 
 		if (!m_hidden)
 		{
+			if (m_material != NULL)
+			{
+				m_material->apply();
+			}
 			render();
 		}
 
@@ -72,6 +82,11 @@ public:
 			}
 		}
 		glPopMatrix();
+	}
+
+	void setMaterial(Material * material) 
+	{
+		m_material = material;
 	}
 
 	void attach(SceneObject * other, bool is_owned)

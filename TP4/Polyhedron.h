@@ -84,7 +84,7 @@ public:
 		} 
 	}
 
-	void render()
+	virtual void render()
 	{
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
